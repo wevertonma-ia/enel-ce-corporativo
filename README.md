@@ -329,27 +329,9 @@ if __name__ == "__main__":
         print(f"❌ Erro: {e}")
 ```
 
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
-3. Commit: `git commit -m 'Add nova funcionalidade'`
-4. Push: `git push origin feature/nova-funcionalidade`
-5. Abra um Pull Request
-
-## ⚖️ Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
-
 ## ⚠️ Disclaimer
 
 Esta API é para fins educacionais e de automação pessoal. Certifique-se de estar em conformidade com os termos de uso da Enel e leis aplicáveis ao usar este código.
-
-## 📞 Suporte
-
-- 🐛 **Issues**: [GitHub Issues](https://github.com/seu-usuario/enel-pdf-extractor/issues)
-- 📧 **Email**: seu-email@exemplo.com
-- 💬 **Discussões**: [GitHub Discussions](https://github.com/seu-usuario/enel-pdf-extractor/discussions)
 
 ---
 
