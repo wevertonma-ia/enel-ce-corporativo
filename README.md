@@ -1,11 +1,11 @@
-# 🔌 Enel PDF Extractor API
+# 📄 Enel Text Extractor API
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com)
 [![Selenium](https://img.shields.io/badge/Selenium-4.0+-orange.svg)](https://selenium.dev)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-API automatizada para extração de texto completo de faturas de energia elétrica da **Enel Distribuição Ceará**. Realiza login automático, download e processamento de PDFs de segunda via.
+API automatizada para **extração de texto** de faturas de energia elétrica da **Enel Distribuição Ceará**. Realiza login automático, baixa o PDF da segunda via e retorna todo o texto extraído em formato JSON.
 
 ## 📋 Funcionalidades
 
@@ -13,9 +13,12 @@ API automatizada para extração de texto completo de faturas de energia elétri
 - ✅ **Seleção inteligente** de clientes (contas múltiplas)
 - ✅ **Download automático** de PDF da segunda via
 - ✅ **Extração completa** de texto do PDF
+- ✅ **Retorno em JSON** com texto extraído
+- ✅ **Limpeza automática** de arquivos temporários
 - ✅ **API REST** com FastAPI
-- ✅ **Processamento assíncrono** de limpeza
 - ✅ **Logs detalhados** para debugging
+
+> **⚠️ Importante:** A API retorna o **texto extraído** do PDF, não o arquivo PDF em si. O PDF é baixado temporariamente e deletado após a extração.
 
 ## 🚀 Instalação
 
@@ -87,7 +90,8 @@ response = requests.post("http://localhost:8000/extrair-texto-pdf-completo", jso
 })
 
 data = response.json()
-print(data["texto_do_pdf_completo"])
+print("Texto extraído:")
+print(data["texto_do_pdf_completo"])  # ← String com todo o texto do PDF
 ```
 
 ## 📖 Documentação da API
@@ -188,20 +192,27 @@ curl -X POST http://localhost:8000/extrair-texto-pdf-completo \
          │                       │                 │
          ▼                       ▼                 ▼
 ┌─────────────────┐    ┌──────────────┐    ┌─────────────┐
-│   PDF           │────│   PyMuPDF    │────│ Temp Files  │
-│   Processing    │    │  (Extração)  │    │ (Cleanup)   │
+│  JSON Response  │◄───│   PyMuPDF    │◄───│ PDF (temp)  │
+│  (texto_do_pdf) │    │  (Extração)  │    │ (deletado)  │
 └─────────────────┘    └──────────────┘    └─────────────┘
 ```
 
+**Fluxo:**
+1. Selenium faz login e baixa PDF
+2. PyMuPDF extrai texto do PDF
+3. **Retorna JSON com texto**
+4. PDF temporário é deletado
+
 ## 📊 Performance
 
-| Operação | Tempo Médio | Fatores |
-|----------|-------------|---------|
-| **Login** | 8-15s | Velocidade da internet |
-| **Seleção Cliente** | 2-5s | Número de clientes |
-| **Download PDF** | 10-30s | Tamanho do arquivo |
-| **Extração Texto** | 1-3s | Páginas do PDF |
-| **Total** | **25-50s** | Condições da rede |
+| Operação | Tempo Médio | Descrição |
+|----------|-------------|-----------|
+| **Login** | 8-15s | Autenticação no portal Enel |
+| **Seleção Cliente** | 2-5s | Escolha do número de cliente |
+| **Download PDF** | 10-30s | Download temporário do arquivo |
+| **Extração Texto** | 1-3s | Conversão PDF → texto |
+| **Limpeza** | <1s | Remoção do PDF temporário |
+| **Total** | **25-50s** | **Retorna JSON com texto** |
 
 ## 🔧 Troubleshooting
 
@@ -278,7 +289,7 @@ class EnelExtractor:
         self.base_url = base_url
     
     def extract_pdf_text(self, email: str, senha: str, numero_cliente: str) -> Dict[str, Any]:
-        """Extrai texto do PDF da fatura"""
+        """Extrai texto do PDF da fatura e retorna em JSON"""
         url = f"{self.base_url}/extrair-texto-pdf-completo"
         
         payload = {
@@ -290,7 +301,7 @@ class EnelExtractor:
         try:
             response = requests.post(url, json=payload, timeout=300)
             response.raise_for_status()
-            return response.json()
+            return response.json()  # ← Retorna JSON com texto, não PDF
         
         except requests.exceptions.RequestException as e:
             raise Exception(f"Erro na requisição: {e}")
@@ -320,10 +331,15 @@ if __name__ == "__main__":
             numero_cliente="123456789"
         )
         
-        print(f"✅ Sucesso!")
+        print(f"✅ Extração concluída!")
         print(f"📅 Data: {result['data_referencia']}")
         print(f"👤 Cliente: {result['numero_cliente_selecionado']}")
-        print(f"📄 Texto extraído ({len(result['texto_do_pdf_completo'])} caracteres)")
+        print(f"📝 Texto extraído: {len(result['texto_do_pdf_completo'])} caracteres")
+        
+        # Salvar texto em arquivo se necessário
+        with open("fatura_texto.txt", "w", encoding="utf-8") as f:
+            f.write(result['texto_do_pdf_completo'])
+        print("💾 Texto salvo em fatura_texto.txt")
         
     except Exception as e:
         print(f"❌ Erro: {e}")
@@ -333,12 +349,3 @@ if __name__ == "__main__":
 
 Esta API é para fins educacionais e de automação pessoal. Certifique-se de estar em conformidade com os termos de uso da Enel e leis aplicáveis ao usar este código.
 
----
-
-<div align="center">
-
-**Desenvolvido com ❤️ usando FastAPI + Selenium**
-
-[![Star this repo](https://img.shields.io/github/stars/seu-usuario/enel-pdf-extractor?style=social)](https://github.com/seu-usuario/enel-pdf-extractor)
-
-</div>
